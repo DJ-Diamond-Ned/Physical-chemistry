@@ -1,101 +1,101 @@
 from thermo import ChemicalConstantsPackage, CEOSGas, CEOSLiquid, PRMIX, FlashVL, FlashVLN
 from thermo.interaction_parameters import IPDB
+from dataclasses import dataclass
 # Load constants and properties
-constants, properties = ChemicalConstantsPackage.from_IDs(['acetone', 'chloroform'])
+constants, properties = ChemicalConstantsPackage.from_IDs(["acetone", "chloroform"])
 # Objects are initialized at a particular condition
-T = 298.15
-P = 1e5
-zs = [.5, .5]
+
+@dataclass(slots=True, frozen=True)
+class CONSTANTS:
+    T = 298.15
+    P = 1e5
+    zs = [0.5, 0.5]
+    k12 = 0.0159
 
 # Use Peng-Robinson for both the vapor and the liquid phases
-k12 = 0.0159
-
-
-kijs = [[0, k12],
-        [k12, 0]]
-print(k12)
-eos_kwargs = dict(Tcs=constants.Tcs, Pcs=constants.Pcs, omegas=constants.omegas, kijs=kijs)
-gas = CEOSGas(PRMIX, eos_kwargs, HeatCapacityGases=properties.HeatCapacityGases, T=T, P=P, zs=zs)
-liquid = CEOSLiquid(PRMIX, eos_kwargs, HeatCapacityGases=properties.HeatCapacityGases, T=T, P=P, zs=zs)
-#gas = CEOSGas(PRMIX, eos_kwargs=eos_kwargs)
-#liquid = CEOSLiquid(PRMIX, eos_kwargs=eos_kwargs)
+kijs = [ [0, CONSTANTS.k12], [CONSTANTS.k12, 0] ]
+print(CONSTANTS.k12)
+eos_kwargs = dict(Tcs = constants.Tcs, Pcs = constants.Pcs, omegas = constants.omegas, kijs = kijs)
+gas = CEOSGas(PRMIX, eos_kwargs, HeatCapacityGases = properties.HeatCapacityGases, T = CONSTANTS.T, P = CONSTANTS.P, zs = CONSTANTS.zs)
+liquid = CEOSLiquid(PRMIX, eos_kwargs, HeatCapacityGases = properties.HeatCapacityGases, T = CONSTANTS.T, P = CONSTANTS.P, zs = CONSTANTS.zs)
 
 # Create a flasher instance, assuming only vapor-liquid behavior
-flasher = FlashVL(constants, properties, liquid=liquid, gas=gas)
+flasher = FlashVL(constants, properties, liquid = liquid, gas = gas)
 
 # Create a T-xy plot at P bar
-_ = flasher.plot_Txy(P=P, pts=100)
+_ = flasher.plot_Txy(P = CONSTANTS.P, pts = 100)
 
 # Create a P-xy plot at T Kelvin
-_ = flasher.plot_Pxy(T=T, pts=100)
+_ = flasher.plot_Pxy(T = CONSTANTS.T, pts = 100)
 
 # Create a xy diagram at T Kelvin
-_ = flasher.plot_xy(T=T, pts=100)
+_ = flasher.plot_xy(T = CONSTANTS.T, pts = 100)
 
-liquid2 = CEOSLiquid(PRMIX, eos_kwargs, HeatCapacityGases=properties.HeatCapacityGases, T=T, P=P, zs=zs)
-flasher2 = FlashVLN(constants, properties, liquids=[liquid, liquid2], gas=gas)
-res = flasher2.flash(T=T, P=P, zs=zs)
-print('There are %s phases present at %f K and %f bar' %(res.phase_count,T,P/1e5))
-if res.VF > 0:
-	print(res.gas.zs)
-if res.VF == 1:  # Есть только пар
-	print("Only vapour")
+liquid2 = CEOSLiquid(PRMIX, eos_kwargs, HeatCapacityGases = properties.HeatCapacityGases, T = CONSTANTS.T, P = CONSTANTS.P, zs = CONSTANTS.zs)
+flasher2 = FlashVLN(constants, properties, liquids = [liquid, liquid2], gas = gas)
+res = flasher2.flash(T = CONSTANTS.T, P = CONSTANTS.P, zs = CONSTANTS.zs)
+print(f"При температуре {CONSTANTS.T} K и давлении {CONSTANTS.P / 1e5} бар присутствуют ровно {res.phase_count} фазы")
+if (res.VF > 0):
+    print(res.gas.zs)
+     
+if (res.VF == 1):
+    print("Только газ") 
+     
 else:
-	print("Liquid0: ")
-	print(res.liquid0.zs)
-	if res.liquid_count>1:
-            print("LIQUID PHASE SEPARATION")
-		#print("Liquid1: ")
-		#print(res.liquid1.zs)
+    print(f"Liquid0: {res.liquid0.zs}") 
+    if (res.liquid_count > 1):
+        print("LIQUID PHASE SEPARATION")
 
-print("Рассчет абсолютных ошибок")
 
-experimental_points = [
-    {'T': 334.817, 'x_exp': 0.06,     'y_exp': 0.037680},
-    {'T': 336.962, 'x_exp': 0.30,     'y_exp': 0.282070},
-    {'T': 336.061, 'x_exp': 0.55,     'y_exp': 0.614500},
-    {'T': 333.320, 'x_exp': 0.75,     'y_exp': 0.835822},
-    {'T': 330.390, 'x_exp': 0.92,     'y_exp': 0.960424}
-]
 
-P_bar = 1.01  
-P_Pa = P_bar * 1e5 
+@dataclass(slots=True, frozen=True)
+class CONSTANTS_FOR_ERRORS:
+    T = 298.15
+    Pressure_bar = 1.01
 
-errors_x = []
-errors_y = [] 
+    experimental_points_from_vlecalc = [
+        {'T': 334.817, 'x_exp': 0.06,     'y_exp': 0.037680},
+        {'T': 336.962, 'x_exp': 0.30,     'y_exp': 0.282070},
+        {'T': 336.061, 'x_exp': 0.55,     'y_exp': 0.614500},
+        {'T': 333.320, 'x_exp': 0.75,     'y_exp': 0.835822},
+        {'T': 330.390, 'x_exp': 0.92,     'y_exp': 0.960424}
+    ]
 
-print("\n{:<4} {:<10} {:<10} {:<10} {:<10} {:<12} {:<12} {:<12} {:<12}".format(
-    "N", "T(K)", "x_exp", "y_exp", "z=(x+y)/2", "x_pred", "y_pred", "|Δx|", "|Δy|"))
-print("-" * 95)
+Pressure_pascal = CONSTANTS_FOR_ERRORS.Pressure_bar * 1e5
+errors_x, errors_y = [], []
 
-for i, point in enumerate(experimental_points, 1):
-    z_calc = (point['x_exp'] + point['y_exp']) / 2
-    zs_point = [z_calc, 1 - z_calc]  # [ацетонитрил, метанол]
+print("\t\t\t\t\t\t\t\t_____ ----- РАСЧЁТ АБСОЛЮТНЫХ ОШИБОК ----- _____")
+print("\n\t\tN \t  T(K) \t\tx_exp \t\t y_exp \t\tz=(x+y)/2 \tx_pred \t\t y_pred\t\t |Δx| \t\t  |Δy|")
+
+print("-" * (69 + 67 + 52))
+
+for i, point in enumerate(CONSTANTS_FOR_ERRORS.experimental_points_from_vlecalc, 1):
+    z_calc = (point["x_exp"] + point["y_exp"]) / 2
+    zs_point = [z_calc, 1 - z_calc]
     
-    res_point = flasher2.flash(T=point['T'], P=P_Pa, zs=zs_point)
+    res_point = flasher.flash(T = point["T"], P = Pressure_pascal, zs = zs_point)
     
-    if res_point.liquid_count > 0:
-        x_pred = res_point.liquid0.zs[0]  
+    if (res_point.liquid_count > 0):
+        x_pred = res_point.liquid0.zs[0]
     else:
-        x_pred = 0.0 
+        x_pred = 0.0
     
-    if res_point.VF > 0 and res_point.gas is not None:
-        y_pred = res_point.gas.zs[0] 
+    if ( (res_point.VF > 0) and (res_point.gas is not None) ):
+        y_pred = res_point.gas.zs[0]
     else:
-        y_pred = 0.0  
+        y_pred = 0.0
     
-    delta_x = abs(x_pred - point['x_exp'])
-    delta_y = abs(y_pred - point['y_exp'])
+    delta_x = abs(x_pred - point["x_exp"])
+    delta_y = abs(y_pred - point["y_exp"])
     
     errors_x.append(delta_x)
     errors_y.append(delta_y)
     
-    print("{:<4} {:<10.3f} {:<10.4f} {:<10.6f} {:<10.4f} {:<12.4f} {:<12.6f} {:<12.6f} {:<12.6f}".format(
-        i, point['T'], point['x_exp'], point['y_exp'], z_calc, x_pred, y_pred, delta_x, delta_y))
+    phase_info = f"({res_point.phase_count} фазы, VF = {res_point.VF:.2f})"    
+    print(f"\t\t{i} \t{point["T"]:.4f} \t{point["x_exp"]:.4f} \t\t{point["y_exp"]:.6f} \t{z_calc:.6f} \t{x_pred:.4f} \t\t{y_pred:.6f} \t{delta_x:.5f} \t{delta_y:.7f} \t{phase_info}")
 
 MAE_x = sum(errors_x) / len(errors_x)
 MAE_y = sum(errors_y) / len(errors_y)
 
-print("\тСредняя абсолютная ошибка (MAE) для жидкой фазы (x): {:.6f}".format(MAE_x))
-print("Средняя абсолютная ошибка (MAE) для паровой фазы (y): {:.6f}".format(MAE_y))
-print("="*100)
+print(f"\nСредняя абсолютная ошибка (MAE) для жидкой фазы (x): {MAE_x:.6f}")
+print(f"Средняя абсолютная ошибка (MAE) для паровой фазы (y): {MAE_y:.6f}")
