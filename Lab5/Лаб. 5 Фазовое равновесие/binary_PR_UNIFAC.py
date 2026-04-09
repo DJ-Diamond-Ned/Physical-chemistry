@@ -57,11 +57,11 @@ class CONSTANTS_FOR_ERRORS:
     Pressure_bar = 1.01
 
     experimental_points_from_vlecalc = [
-        {'T': 334.817, 'x_exp': 0.06,     'y_exp': 0.037680},
-        {'T': 336.962, 'x_exp': 0.30,     'y_exp': 0.282070},
-        {'T': 336.061, 'x_exp': 0.55,     'y_exp': 0.614500},
+        {'T': 333.640, 'x_exp': 0.73,     'y_exp': 0.817000},
+        {'T': 332.815, 'x_exp': 0.78,     'y_exp': 0.861500},
         {'T': 333.320, 'x_exp': 0.75,     'y_exp': 0.835822},
-        {'T': 330.390, 'x_exp': 0.92,     'y_exp': 0.960424}
+        {'T': 332.480, 'x_exp': 0.80,     'y_exp': 0.878659},
+        {'T': 331.614, 'x_exp': 0.85,     'y_exp': 0.916240}
     ]
 
 Pressure_pascal = CONSTANTS_FOR_ERRORS.Pressure_bar * 1e5
