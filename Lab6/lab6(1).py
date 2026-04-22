@@ -8,15 +8,21 @@ coef_H2 = [0.23443029E+01, 0.79804248E-02, -0.19477917E-04, 0.20156967E-07, -0.7
 coef_CO = [0.35795335E+01, -0.61035369E-03, 0.10168143E-05, 0.90700586E-09, -0.90442449E-12, -0.14344086E+05, 0.35084093E+01]
 
 
-def calc_H(coef, T):
+def calc_H(coef, T, R):
+    """Расчёт энтальпии H(T) в Дж/моль"""
     return R * T * (coef[0] + coef[1]*T/2 + coef[2]*pow(T,2)/3 + coef[3]*pow(T,3)/4 + coef[4]*pow(T,4)/5 + coef[5]/T)
 
-H_CH3OH = calc_H(coef_CH3OH, T)
-H_H2 = calc_H(coef_H2, T)
-H_CO = calc_H(coef_CO, T)
+H_CH3OH = calc_H(coef_CH3OH, T, R)
+H_H2 = calc_H(coef_H2, T, R)
+H_CO = calc_H(coef_CO, T, R)
 
 
 
 delta_H = 6*H_H2 + H_CO - H_CH3OH
 
-print(f"Тепловой эффект реакции:   {delta_H/1000:.2f} КДж/моль")
+print(f"Реакция: 2H2+CO==CH3OH(ж))")
+print(f"\nРезультаты расчёта:")
+print(f"  H(CO)    = {H_CO:.2f} Дж/моль")
+print(f"  H(CH3OH)   = {H_CH3OH:.2f} Дж/моль")
+print(f"  H(H2) = {H_H2:.2f} Дж/моль")
+print(f"\n Тепловой эффект реакции ΔH = {delta_H/1000:.2f} кДж/моль")
