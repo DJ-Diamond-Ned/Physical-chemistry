@@ -18,7 +18,7 @@ H_CO = calc_H(coef_CO, T, R)
 
 
 
-delta_H = 6*H_H2 + H_CO - H_CH3OH
+delta_H = H_CH3OH - 2*H_H2 - H_CO
 
 print(f"Реакция: 2H2+CO==CH3OH(ж))")
 print(f"\nРезультаты расчёта:")
