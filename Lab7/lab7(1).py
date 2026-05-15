@@ -106,9 +106,16 @@ cCl2_eq = (pCl2_final * 1000) / (R_const * T_target)
 # Kc = [NO]^2 * [Cl2] / [NOCl]^2
 Kc = (cNO_eq**2 * cCl2_eq) / (cNOCl_eq**2)
 
+if best_idx == 0:
+    k_unit = "моль / (м³ * с)"
+elif best_idx == 1:
+    k_unit = "с⁻¹"
+else:
+    k_unit = "м³ / (моль * с)"
+
 print("\n   Итоговые расчеты:")
-print(f"Константа скорости k = {k_res:.4e}")
+print(f"Константа скорости k = {k_res:.4e} {k_unit}") # Теперь с единицей измерения
 print(f"Время полупревращения τ₁/₂ = {tau_half:.2f} с")
 print(f"Концентрация NOCl при t₁ = {t1_calc} с: cA = {cA_t1:.4f} моль/м³")
-print(f"Конверсия при t₁ = {t1_calc} с: α = {deg_conv:.4f}")
+print(f"Конверсия при t₁ = {t1_calc} с: α = {deg_conv:.4f} ({deg_conv*100:.2f}%)")
 print(f"Константа равновесия Kc = {Kc:.4f}")
