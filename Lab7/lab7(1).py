@@ -12,7 +12,7 @@ t_val = np.array([0, 160, 320, 760, 1510, 3820, 5600])
 p_total = np.array([16.81, 17.03, 17.24, 17.76, 18.51, 20.10, 20.89])
 
 pA_val = 3 * p_init - 2 * p_total
-cA_val = pA_val * 1000 / (R_const * T_target)# По уравнению Менделеева-Клайперона     
+cA_val = pA_val * 1000 / (R_const * T_target) # По уравнению Менделеева-Клапейрона     
 
 print(f"{'t, с':>6}  {'p, кПа':>8}  {'pA, кПа':>9}  {'cA, моль/м³':>12}")
 print("-" * 50)
@@ -41,6 +41,7 @@ print(f"Первый порядок:   R² = {R2_val1:.4f}")
 print(f"Второй порядок:   R² = {R2_val2:.4f}")
 print(f"\nВыбран {names[best_idx]} порядок (R² = {R2_results[best_idx]:.4f})")
 
+# График 1
 plt.figure(figsize=(8, 5))
 plt.plot(t_val, cA_val, 'o-', color='darkblue', markersize=7, linewidth=1.5)
 plt.xlabel('t, с', fontsize=12)
@@ -50,43 +51,29 @@ plt.grid(True, alpha=0.3)
 plt.tight_layout()
 plt.show()
 
+# Графики анаморфоз
 t_linspace = np.linspace(0, 5700, 100)
-
 fig, axes = plt.subplots(1, 3, figsize=(18, 6))
 
 axes[0].scatter(t_val, y_0, color='green', s=50, zorder=5)
-axes[0].plot(t_linspace, inter_0 + slope_0 * t_linspace, 'k-', linewidth=1.5,
-             label=f'R² = {R2_val0:.4f}')
-axes[0].set_xlabel('t, с')
-axes[0].set_ylabel('cA, моль/м³')
-axes[0].set_title('Нулевой порядок')
-axes[0].legend()
-axes[0].grid(True, alpha=0.3)
+axes[0].plot(t_linspace, inter_0 + slope_0 * t_linspace, 'k-', linewidth=1.5, label=f'R² = {R2_val0:.4f}')
+axes[0].set_xlabel('t, с'); axes[0].set_ylabel('cA, моль/м³'); axes[0].set_title('Нулевой порядок'); axes[0].legend(); axes[0].grid(True, alpha=0.3)
 
 axes[1].scatter(t_val, y_1, color='green', s=50, zorder=5)
-axes[1].plot(t_linspace, inter_1 + slope_1 * t_linspace, 'k-', linewidth=1.5,
-             label=f'R² = {R2_val1:.4f}')
-axes[1].set_xlabel('t, с')
-axes[1].set_ylabel('ln(cA)')
-axes[1].set_title('Первый порядок')
-axes[1].legend()
-axes[1].grid(True, alpha=0.3)
+axes[1].plot(t_linspace, inter_1 + slope_1 * t_linspace, 'k-', linewidth=1.5, label=f'R² = {R2_val1:.4f}')
+axes[1].set_xlabel('t, с'); axes[1].set_ylabel('ln(cA)'); axes[1].set_title('Первый порядок'); axes[1].legend(); axes[1].grid(True, alpha=0.3)
 
 axes[2].scatter(t_val, y_2, color='green', s=50, zorder=5)
-axes[2].plot(t_linspace, inter_2 + slope_2 * t_linspace, 'k-', linewidth=1.5,
-             label=f'R² = {R2_val2:.4f}')
-axes[2].set_xlabel('t, с')
-axes[2].set_ylabel('1/cA')
-axes[2].set_title('Второй порядок')
-axes[2].legend()
-axes[2].grid(True, alpha=0.4)
+axes[2].plot(t_linspace, inter_2 + slope_2 * t_linspace, 'k-', linewidth=1.5, label=f'R² = {R2_val2:.4f}')
+axes[2].set_xlabel('t, с'); axes[2].set_ylabel('1/cA'); axes[2].set_title('Второй порядок'); axes[2].legend(); axes[2].grid(True, alpha=0.4)
 
-plt.tight_layout(rect=[0, 0, 1, 0.95]) # Добавляем отступ сверху (0.95) под заголовок
+plt.tight_layout(rect=[0, 0, 1, 0.95])
 plt.suptitle('Определение порядка реакции (линейные графики)', fontsize=15)
 plt.show()
 
+# Финальные расчеты
 cA_start = cA_val[0]
-t1_calc = 3600  # Время из твоего условия
+t1_calc = 3600  
 
 if best_idx == 0:
     k_res = abs(slope_0)
@@ -103,8 +90,25 @@ elif best_idx == 2:
 
 deg_conv = (cA_start - cA_t1) / cA_start
 
+# --- НОВЫЙ БЛОК: РАСЧЕТ КОНСТАНТЫ РАВНОВЕСИЯ Kc ---
+# Берем данные последней точки (t = 5600 c)
+p_final = p_total[-1]
+x_final = p_final - p_init  # Из формулы p_общ = p0 + x
+pA_final = pA_val[-1]       # Равновесное давление NOCl
+pNO_final = 2 * x_final     # Равновесное давление NO
+pCl2_final = x_final        # Равновесное давление Cl2
+
+# Перевод давлений в молярные концентрации (моль/м3)
+cNOCl_eq = (pA_final * 1000) / (R_const * T_target)
+cNO_eq = (pNO_final * 1000) / (R_const * T_target)
+cCl2_eq = (pCl2_final * 1000) / (R_const * T_target)
+
+# Kc = [NO]^2 * [Cl2] / [NOCl]^2
+Kc = (cNO_eq**2 * cCl2_eq) / (cNOCl_eq**2)
+
 print("\n   Итоговые расчеты:")
 print(f"Константа скорости k = {k_res:.4e}")
 print(f"Время полупревращения τ₁/₂ = {tau_half:.2f} с")
 print(f"Концентрация NOCl при t₁ = {t1_calc} с: cA = {cA_t1:.4f} моль/м³")
-print(f"Степень превращения при t₁ = {t1_calc} с: α = {deg_conv:.4f}")
+print(f"Конверсия при t₁ = {t1_calc} с: α = {deg_conv:.4f}")
+print(f"Константа равновесия Kc = {Kc:.4f}")
